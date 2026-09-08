@@ -1,0 +1,260 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 71;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A00000010000000000000001 /* SaveSpacePhotosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000100000000000000001 /* SaveSpacePhotosApp.swift */; };
+		A00000010000000000000002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000100000000000000002 /* ContentView.swift */; };
+		A00000010000000000000003 /* CompressionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000100000000000000003 /* CompressionModels.swift */; };
+		A00000010000000000000004 /* PhotoLibraryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000100000000000000004 /* PhotoLibraryService.swift */; };
+		A00000010000000000000005 /* CompressionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000100000000000000007 /* CompressionService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A00000100000000000000001 /* SaveSpacePhotosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveSpacePhotosApp.swift; sourceTree = "<group>"; };
+		A00000100000000000000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A00000100000000000000003 /* CompressionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressionModels.swift; sourceTree = "<group>"; };
+		A00000100000000000000004 /* PhotoLibraryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryService.swift; sourceTree = "<group>"; };
+		A00000100000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A00000100000000000000006 /* SaveSpacePhotos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SaveSpacePhotos.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000100000000000000007 /* CompressionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressionService.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A00000200000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A00000300000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A00000300000000000000002 /* SaveSpacePhotos */,
+				A00000300000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A00000300000000000000002 /* SaveSpacePhotos */ = {
+			isa = PBXGroup;
+			children = (
+				A00000100000000000000001 /* SaveSpacePhotosApp.swift */,
+				A00000100000000000000002 /* ContentView.swift */,
+				A00000100000000000000003 /* CompressionModels.swift */,
+				A00000100000000000000004 /* PhotoLibraryService.swift */,
+				A00000100000000000000007 /* CompressionService.swift */,
+				A00000100000000000000005 /* Info.plist */,
+			);
+			path = SaveSpacePhotos;
+			sourceTree = "<group>";
+		};
+		A00000300000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A00000100000000000000006 /* SaveSpacePhotos.app */,
+			);
+			path = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A00000400000000000000001 /* SaveSpacePhotos */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A00000700000000000000002 /* Build configuration list for PBXNativeTarget "SaveSpacePhotos" */;
+			buildPhases = (
+				A00000500000000000000001 /* Resources */,
+				A00000200000000000000001 /* Frameworks */,
+				A00000500000000000000002 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SaveSpacePhotos;
+			productName = SaveSpacePhotos;
+			productReference = A00000100000000000000006 /* SaveSpacePhotos.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A00000600000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					A00000400000000000000001 = {
+						CreatedOnToolsVersion = 26.6;
+					};
+				};
+			};
+			buildConfigurationList = A00000700000000000000001 /* Build configuration list for PBXProject "SaveSpacePhotos" */;
+			compatibilityVersion = "Xcode 16.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A00000300000000000000001;
+			productRefGroup = A00000300000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A00000400000000000000001 /* SaveSpacePhotos */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A00000500000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A00000500000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A00000010000000000000001 /* SaveSpacePhotosApp.swift in Sources */,
+				A00000010000000000000002 /* ContentView.swift in Sources */,
+				A00000010000000000000003 /* CompressionModels.swift in Sources */,
+				A00000010000000000000004 /* PhotoLibraryService.swift in Sources */,
+				A00000010000000000000005 /* CompressionService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A00000800000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SaveSpacePhotos/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.savespace.photos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A00000800000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SaveSpacePhotos/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.savespace.photos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A00000800000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Y7RBHJUXN4;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SaveSpacePhotos/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.savespace.photos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A00000800000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Y7RBHJUXN4;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SaveSpacePhotos/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.savespace.photos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A00000700000000000000001 /* Build configuration list for PBXProject "SaveSpacePhotos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000800000000000000001 /* Debug */,
+				A00000800000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A00000700000000000000002 /* Build configuration list for PBXNativeTarget "SaveSpacePhotos" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A00000800000000000000003 /* Debug */,
+				A00000800000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A00000600000000000000001 /* Project object */;
+}
