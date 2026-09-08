@@ -5,6 +5,8 @@ import UIKit
 
 struct ContentView: View {
     @EnvironmentObject private var library: PhotoLibraryService
+    @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @State private var stage: AppStage = .onboarding
     @State private var pickerItems: [PhotosPickerItem] = []
     @State private var mediaItems: [MediaItem] = []
@@ -32,6 +34,13 @@ struct ContentView: View {
             .navigationTitle("SaveSpace Photos")
             .navigationBarTitleDisplayMode(.inline)
             .alert("Photos access needed", isPresented: permissionAlert) {
+                if library.authorization == .denied {
+                    Button("Open Settings") {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            openURL(url)
+                        }
+                    }
+                }
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(library.errorMessage ?? "Allow Photos access in Settings to continue.")
@@ -44,7 +53,12 @@ struct ContentView: View {
             }
         }
         .task {
-            if library.authorization == .notDetermined { await library.requestAccess() }
+            library.refreshAuthorization()
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                library.refreshAuthorization()
+            }
         }
     }
 
@@ -73,10 +87,10 @@ struct ContentView: View {
                 .background(.background, in: RoundedRectangle(cornerRadius: 20))
 
                 Button {
-                    if library.authorization == .denied || library.authorization == .restricted {
-                        library.errorMessage = "Photos access is denied. Enable access in Settings to select and save media."
-                    } else {
-                        stage = .selecting
+                    Task {
+                        if await library.requestAccessIfNeeded() {
+                            stage = .selecting
+                        }
                     }
                 } label: {
                     Label("Select media", systemImage: "photo.on.rectangle.angled")

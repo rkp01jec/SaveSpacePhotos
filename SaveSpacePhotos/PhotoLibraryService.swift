@@ -14,8 +14,26 @@ final class PhotoLibraryService: ObservableObject {
     @Published private(set) var authorization: PHAuthorizationStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
     @Published var errorMessage: String?
 
-    func requestAccess() async {
-        authorization = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+    func refreshAuthorization() {
+        authorization = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+    }
+
+    @discardableResult
+    func requestAccessIfNeeded() async -> Bool {
+        refreshAuthorization()
+        if authorization == .notDetermined {
+            _ = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+            refreshAuthorization()
+        }
+        guard authorization == .authorized || authorization == .limited else {
+            if authorization == .restricted {
+                errorMessage = "Photos access is restricted on this device. Ask the device administrator to allow Photos access."
+            } else {
+                errorMessage = "Photos access is denied. Allow access in Settings to choose and save compressed copies."
+            }
+            return false
+        }
+        return true
     }
 
     func save(_ results: [CompressionResult]) async -> SaveReport {
