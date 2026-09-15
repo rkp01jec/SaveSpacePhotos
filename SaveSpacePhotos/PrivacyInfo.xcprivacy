@@ -1,9 +1,12 @@
-{
-  "privacy": [
-    {
-      "type": "photos",
-      "usage": ["read", "write"],
-      "description": "SaveSpace Photos accesses your photo library to allow you to select and compress media. No photos or videos are uploaded or sent off your device."
-    }
-  ]
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyTracking</key>
+	<false/>
+</dict>
+</plist>
