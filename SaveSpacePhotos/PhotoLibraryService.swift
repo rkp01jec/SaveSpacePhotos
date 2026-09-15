@@ -16,8 +16,11 @@ final class PhotoLibraryService: ObservableObject {
 
     func refreshAuthorization() {
         authorization = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        print("PhotoLibraryService authorization is now: \(authorization.rawValue)")
+        if authorization == .authorized || authorization == .limited {
+            errorMessage = nil
+        }
     }
-
     @discardableResult
     func requestAccessIfNeeded() async -> Bool {
         refreshAuthorization()
@@ -37,6 +40,7 @@ final class PhotoLibraryService: ObservableObject {
     }
 
     func save(_ results: [CompressionResult]) async -> SaveReport {
+        refreshAuthorization()
         guard authorization == .authorized || authorization == .limited else {
             let message = "Photos access is required to save compressed copies."
             errorMessage = message
@@ -44,13 +48,13 @@ final class PhotoLibraryService: ObservableObject {
         }
 
         do {
-            guard let album = try await Self.fetchOrCreateAlbum() else {
+            guard let album = try Self.fetchOrCreateAlbum() else {
                 throw PhotoLibraryError.albumCreationFailed
             }
             let payloads = results.map {
                 SavePayload(url: $0.outputURL, type: $0.outputType)
             }
-            try await Self.save(payloads, to: album)
+            try Self.save(payloads, to: album)
             return SaveReport(savedCount: results.count, errorMessage: nil)
         } catch {
             let message = error.localizedDescription
@@ -64,7 +68,7 @@ final class PhotoLibraryService: ObservableObject {
         let type: MediaType
     }
 
-    private static func fetchOrCreateAlbum() async throws -> PHAssetCollection? {
+    nonisolated private static func fetchOrCreateAlbum() throws -> PHAssetCollection? {
         let fetch = PHAssetCollection.fetchAssetCollections(
             with: .album,
             subtype: .albumRegular,
@@ -79,54 +83,34 @@ final class PhotoLibraryService: ObservableObject {
         }
         if let existing { return existing }
 
-        let identifier = try await withCheckedThrowingContinuation { continuation in
-            let box = PlaceholderBox()
-            PHPhotoLibrary.shared().performChanges {
-                let request = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: albumTitle)
-                box.identifier = request.placeholderForCreatedAssetCollection.localIdentifier
-            } completionHandler: { success, error in
-                if success, let identifier = box.identifier {
-                    continuation.resume(returning: identifier)
-                } else {
-                    continuation.resume(throwing: error ?? PhotoLibraryError.albumCreationFailed)
-                }
+        try PHPhotoLibrary.shared().performChangesAndWait {
+            _ = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: albumTitle)
+        }
+        let createdAlbums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: nil)
+        var createdAlbum: PHAssetCollection?
+        createdAlbums.enumerateObjects { collection, _, stop in
+            if collection.localizedTitle == albumTitle {
+                createdAlbum = collection
+                stop.pointee = true
             }
         }
-
-        return PHAssetCollection.fetchAssetCollections(
-            withLocalIdentifiers: [identifier],
-            options: nil
-        ).firstObject
+        return createdAlbum
     }
 
-    private static func save(_ payloads: [SavePayload], to album: PHAssetCollection) async throws {
-        try await withCheckedThrowingContinuation { continuation in
-            PHPhotoLibrary.shared().performChanges {
-                let albumRequest = PHAssetCollectionChangeRequest(for: album)
-                var placeholders: [PHObjectPlaceholder] = []
+    nonisolated private static func save(_ payloads: [SavePayload], to album: PHAssetCollection) throws {
+        try PHPhotoLibrary.shared().performChangesAndWait {
+            let albumRequest = PHAssetCollectionChangeRequest(for: album)
 
-                for payload in payloads {
-                    let creationRequest = PHAssetCreationRequest.forAsset()
-                    let resourceType: PHAssetResourceType = payload.type == .video ? .video : .photo
-                    creationRequest.addResource(with: resourceType, fileURL: payload.url, options: nil)
-                    if let placeholder = creationRequest.placeholderForCreatedAsset {
-                        placeholders.append(placeholder)
-                    }
-                }
-                albumRequest?.addAssets(placeholders as NSArray)
-            } completionHandler: { success, error in
-                if success {
-                    continuation.resume()
-                } else {
-                    continuation.resume(throwing: error ?? PhotoLibraryError.saveFailed)
+            for payload in payloads {
+                let creationRequest = PHAssetCreationRequest.forAsset()
+                let resourceType: PHAssetResourceType = payload.type == .video ? .video : .photo
+                creationRequest.addResource(with: resourceType, fileURL: payload.url, options: nil)
+                if let placeholder = creationRequest.placeholderForCreatedAsset {
+                    albumRequest?.addAssets([placeholder] as NSArray)
                 }
             }
         }
     }
-}
-
-private final class PlaceholderBox: @unchecked Sendable {
-    var identifier: String?
 }
 
 private enum PhotoLibraryError: LocalizedError {

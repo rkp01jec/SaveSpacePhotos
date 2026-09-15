@@ -2,6 +2,7 @@ import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers
 import UIKit
+import CoreHaptics
 
 struct ContentView: View {
     @EnvironmentObject private var library: PhotoLibraryService
@@ -19,6 +20,7 @@ struct ContentView: View {
     @State private var showSaveConfirmation = false
     @State private var savedCount = 0
     @State private var processingTask: Task<Void, Never>?
+    @State private var hapticEngine: CHHapticEngine? = nil
 
     var body: some View {
         NavigationStack {
@@ -33,27 +35,45 @@ struct ContentView: View {
             }
             .navigationTitle("SaveSpace Photos")
             .navigationBarTitleDisplayMode(.inline)
-            .alert("Photos access needed", isPresented: permissionAlert) {
+            .alert(permissionAlertTitle, isPresented: permissionAlert) {
                 if library.authorization == .denied {
                     Button("Open Settings") {
+                        playHaptic()
                         if let url = URL(string: UIApplication.openSettingsURLString) {
                             openURL(url)
                         }
                     }
                 }
-                Button("OK", role: .cancel) {}
+                Button("OK", role: .cancel) {
+                    playHaptic()
+                }
             } message: {
                 Text(library.errorMessage ?? "Allow Photos access in Settings to continue.")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.primary)
+                    .padding(4)
             }
             .alert("Save compressed copies?", isPresented: $showSaveConfirmation) {
-                Button("Save to Photos") { Task { await saveResults() } }
-                Button("Cancel", role: .cancel) {}
+                Button("Save to Photos") {
+                    playHaptic(type: "success")
+                    Task { await saveResults() }
+                }
+                Button("Cancel", role: .cancel) {
+                    playHaptic()
+                }
             } message: {
                 Text("Your original media will remain unchanged. Copies will be added to the SaveSpace Photos album.")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.primary)
+                    .padding(4)
             }
         }
         .task {
             library.refreshAuthorization()
+            if CHHapticEngine.capabilitiesForHardware().supportsHaptics {
+                hapticEngine = try? CHHapticEngine()
+                try? hapticEngine?.start()
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active {
@@ -66,15 +86,25 @@ struct ContentView: View {
         Binding(get: { library.errorMessage != nil }, set: { if !$0 { library.errorMessage = nil } })
     }
 
+    private var permissionAlertTitle: String {
+        switch library.authorization {
+        case .authorized, .limited:
+            "Unable to load media"
+        default:
+            "Photos access needed"
+        }
+    }
+
     private var onboarding: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("More room for the moments that matter.")
-                        .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .foregroundColor(.primary)
                     Text("Create smaller copies of your photos and videos on this device. Your originals stay exactly where they are.")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 15, weight: .regular))
+                        .foregroundColor(.secondary)
                 }
                 .padding(.top, 24)
 
@@ -84,9 +114,11 @@ struct ContentView: View {
                     benefit(icon: "chart.bar.xaxis", title: "See the difference", detail: "Review expected and actual storage savings before saving.")
                 }
                 .padding(20)
-                .background(.background, in: RoundedRectangle(cornerRadius: 20))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                .shadow(radius: 3, y: 2)
 
                 Button {
+                    playHaptic()
                     Task {
                         if await library.requestAccessIfNeeded() {
                             stage = .selecting
@@ -107,7 +139,8 @@ struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 Text("Choose what to compress")
-                    .font(.title2.bold())
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.primary)
                 PhotosPicker(selection: $pickerItems, matching: .any(of: [.images, .videos]), photoLibrary: .shared()) {
                     Label("Choose from Photos", systemImage: "plus")
                         .frame(maxWidth: .infinity)
@@ -117,11 +150,14 @@ struct ContentView: View {
                     Task { await loadItems(newItems) }
                 }
 
-                if isLoading { ProgressView("Loading selection...") }
+                if isLoading {
+                    ProgressView("Loading selection...")
+                }
                 if !mediaItems.isEmpty {
                     selectionSummary
                     presetPicker
                     Button {
+                        playHaptic()
                         stage = .processing
                         processingTask = Task { await compress() }
                     } label: {
@@ -131,7 +167,8 @@ struct ContentView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                 } else {
-                    ContentUnavailableView("No media selected", systemImage: "photo.on.rectangle", description: Text("Choose photos or videos to see them here."))
+                    ContentUnavailableView("No media selected", systemImage: "photo.stack", description: Text("Choose photos or videos to see them here.").font(.system(size: 13, weight: .regular)).foregroundColor(.secondary))
+                        .tint(.secondary)
                 }
             }
             .padding(20)
@@ -142,35 +179,55 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Selected")
-                    .font(.headline)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.primary)
                 Spacer()
                 Text("\(mediaItems.count) items · \(formattedBytes(mediaItems.reduce(0) { $0 + $1.originalBytes }))")
-                    .foregroundStyle(.secondary)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.secondary)
             }
             ForEach(mediaItems) { item in
                 HStack(spacing: 12) {
-                    if let preview = item.preview { Image(uiImage: preview).resizable().scaledToFill().frame(width: 56, height: 56).clipShape(RoundedRectangle(cornerRadius: 10)) }
-                    else { Image(systemName: "video.fill").frame(width: 56, height: 56).background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 10)) }
+                    if let preview = item.preview {
+                        Image(uiImage: preview)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 56, height: 56)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    } else {
+                        Image(systemName: "video.fill")
+                            .frame(width: 56, height: 56)
+                            .background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                    }
                     VStack(alignment: .leading) {
-                        Text(item.type.rawValue).font(.subheadline.bold())
-                        Text(formattedBytes(item.originalBytes)).font(.caption).foregroundStyle(.secondary)
+                        Text(item.type.rawValue)
+                            .font(.system(size: 16, weight: .regular))
+                            .foregroundColor(.primary)
+                        Text(formattedBytes(item.originalBytes))
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundColor(.secondary)
                     }
                     Spacer()
                 }
             }
         }
         .padding(16)
-        .background(.background, in: RoundedRectangle(cornerRadius: 16))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .shadow(radius: 3, y: 2)
     }
 
     private var presetPicker: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Compression preset").font(.headline)
+            Text("Compression preset")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.primary)
             Picker("Preset", selection: $preset) {
                 ForEach(CompressionPreset.allCases) { Text($0.rawValue).tag($0) }
             }
             .pickerStyle(.segmented)
-            Text(preset.detail).font(.caption).foregroundStyle(.secondary)
+            Text(preset.detail)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(.secondary)
         }
     }
 
@@ -178,11 +235,18 @@ struct ContentView: View {
         VStack(spacing: 24) {
             Spacer()
             Image(systemName: "arrow.down.circle.fill").font(.system(size: 58)).foregroundStyle(.tint)
-            Text("Making smaller copies").font(.title2.bold())
+            Text("Making smaller copies")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.primary)
             ProgressView(value: progress)
-            Text(currentItem).font(.subheadline).foregroundStyle(.secondary)
-            Text("Originals are safe and will not be changed.").font(.caption).foregroundStyle(.secondary)
+            Text(currentItem)
+                .font(.system(size: 16, weight: .regular))
+                .foregroundColor(.secondary)
+            Text("Originals are safe and will not be changed.")
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(.secondary)
             Button("Cancel compression", role: .cancel) {
+                playHaptic(type: "warning")
                 cancelCompression()
             }
             .buttonStyle(.bordered)
@@ -195,9 +259,12 @@ struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Your results").font(.title.bold())
+                    Text("Your results")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.primary)
                     Text("\(results.count) verified · \(skippedCount) skipped · \(failedCount) failed")
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundColor(.secondary)
                 }
                 HStack(spacing: 12) {
                     stat(title: "Saved", value: formattedBytes(results.reduce(0) { $0 + $1.savings }))
@@ -207,19 +274,34 @@ struct ContentView: View {
                 ForEach(results) { result in
                     HStack(spacing: 12) {
                         if result.outputType == .photo, let image = UIImage(contentsOfFile: result.outputURL.path) {
-                            Image(uiImage: image).resizable().scaledToFill().frame(width: 64, height: 64).clipShape(RoundedRectangle(cornerRadius: 10))
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 64, height: 64)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
                         } else {
-                            Image(systemName: "video.fill").frame(width: 64, height: 64).background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                            Image(systemName: "video.fill")
+                                .frame(width: 64, height: 64)
+                                .background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
                         }
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Verified copy").font(.subheadline.bold())
+                            Text("Verified copy")
+                                .font(.system(size: 16, weight: .regular))
+                                .foregroundColor(.primary)
                             Text("\(formattedBytes(result.source.originalBytes)) → \(formattedBytes(result.outputBytes))")
-                                .font(.caption).foregroundStyle(.secondary)
-                            if let warning = result.warning { Text(warning).font(.caption2).foregroundStyle(.orange) }
+                                .font(.system(size: 13, weight: .regular))
+                                .foregroundColor(.secondary)
+                            if let warning = result.warning {
+                                Text(warning)
+                                    .font(.system(size: 13, weight: .regular))
+                                    .foregroundColor(.orange)
+                            }
                         }
                         if skippedCount > 0 || failedCount > 0 {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Items not completed").font(.headline)
+                                Text("Items not completed")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(.primary)
                                 ForEach(outcomes.compactMap { outcome -> String? in
                                     switch outcome {
                                     case .skipped(_, let name, let reason), .failed(_, let name, let reason):
@@ -227,7 +309,9 @@ struct ContentView: View {
                                     case .success: return nil
                                     }
                                 }, id: \.self) { message in
-                                    Text(message).font(.caption).foregroundStyle(.secondary)
+                                    Text(message)
+                                        .font(.system(size: 13, weight: .regular))
+                                        .foregroundColor(.secondary)
                                 }
                             }
                             .padding(16)
@@ -236,16 +320,28 @@ struct ContentView: View {
                         Spacer()
                     }
                     .padding(12)
-                    .background(.background, in: RoundedRectangle(cornerRadius: 14))
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+                    .shadow(radius: 3, y: 2)
                 }
-                Button { showSaveConfirmation = true } label: {
+                Button {
+                    playHaptic(type: "success")
+                    showSaveConfirmation = true
+                } label: {
                     Label(savedCount > 0 ? "Saved \(savedCount) copies" : "Save compressed copies", systemImage: savedCount > 0 ? "checkmark.circle.fill" : "square.and.arrow.down")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(savedCount > 0)
-                Button("Compress more media") { reset() }.frame(maxWidth: .infinity)
+                Button {
+                    playHaptic()
+                    reset()
+                } label: {
+                    Text("Compress more media")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.primary)
+                        .frame(maxWidth: .infinity)
+                }
             }
             .padding(20)
         }
@@ -253,28 +349,54 @@ struct ContentView: View {
 
     private func benefit(icon: String, title: String, detail: String) -> some View {
         HStack(alignment: .top, spacing: 14) {
-            Image(systemName: icon).font(.title3).foregroundStyle(.tint).frame(width: 28)
-            VStack(alignment: .leading, spacing: 3) { Text(title).font(.headline); Text(detail).font(.subheadline).foregroundStyle(.secondary) }
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(.tint)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.primary)
+                Text(detail)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.secondary)
+                    .padding(4)
+            }
         }
     }
 
     private func stat(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 5) { Text(title).font(.caption).foregroundStyle(.secondary); Text(value).font(.title3.bold()) }
-            .frame(maxWidth: .infinity, alignment: .leading).padding(14).background(.background, in: RoundedRectangle(cornerRadius: 14))
+        VStack(alignment: .leading, spacing: 5) {
+            Text(title)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(.secondary)
+                .padding(4)
+            Text(value)
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(.primary)
+                .padding(4)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .shadow(radius: 3, y: 2)
     }
 
     private var metadataNotes: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label("Metadata and format notes", systemImage: "info.circle.fill")
-                .font(.headline)
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.primary)
             Text("Photos are encoded as HEIF when supported, otherwise JPEG. Videos are transcoded to HEVC when supported.")
-                .font(.subheadline)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundColor(.primary)
             Text("Capture date, location, orientation, and standard camera metadata are copied where the format supports them. Live Photo pairing, depth or portrait data, HDR or color-profile information, edit history, and proprietary maker notes are not guaranteed.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundColor(.secondary)
             Text("Your original Photos asset is never modified. Each output is decoded or played back by the system before it is shown as verified.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(.system(size: 13, weight: .regular))
+                .foregroundColor(.secondary)
+                .padding(4)
         }
         .padding(16)
         .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
@@ -305,18 +427,20 @@ struct ContentView: View {
         var loadFailures = 0
         var loadedIdentifiers = Set<String>()
         for item in items {
-            guard let providerURL = try? await item.loadTransferable(type: URL.self) else {
-                loadFailures += 1
-                continue
-            }
             let isVideo = item.supportedContentTypes.contains { $0.conforms(to: .movie) }
             let identifier = item.itemIdentifier ?? UUID().uuidString
             guard loadedIdentifiers.insert(identifier).inserted else { continue }
             let sourceURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("savespace-source-\(UUID().uuidString)")
-                .appendingPathExtension(providerURL.pathExtension)
+                .appendingPathExtension(isVideo ? "mov" : "jpg")
             do {
-                try FileManager.default.copyItem(at: providerURL, to: sourceURL)
+                if let providerURL = try? await item.loadTransferable(type: URL.self) {
+                    try FileManager.default.copyItem(at: providerURL, to: sourceURL)
+                } else if let data = try? await item.loadTransferable(type: Data.self) {
+                    try data.write(to: sourceURL, options: .atomic)
+                } else {
+                    throw CocoaError(.fileReadUnknown)
+                }
                 let bytes = (try FileManager.default.attributesOfItem(atPath: sourceURL.path)[.size] as? NSNumber)?.intValue ?? 0
                 loaded.append(MediaItem(
                     id: identifier,
@@ -384,7 +508,16 @@ struct ContentView: View {
     }
 
     private func reset() {
-        processingTask?.cancel(); processingTask = nil; cleanupTemporaryFiles(); pickerItems = []; mediaItems = []; results = []; outcomes = []; savedCount = 0; progress = 0; stage = .selecting
+        processingTask?.cancel()
+        processingTask = nil
+        cleanupTemporaryFiles()
+        pickerItems = []
+        mediaItems = []
+        results = []
+        outcomes = []
+        savedCount = 0
+        progress = 0
+        stage = .selecting
     }
 
     private func cleanupTemporaryFiles() {
@@ -395,4 +528,20 @@ struct ContentView: View {
             try? FileManager.default.removeItem(at: result.outputURL)
         }
     }
+
+    private func playHaptic(type: String = "tap") {
+        guard let hapticEngine, CHHapticEngine.capabilitiesForHardware().supportsHaptics else { return }
+        let intensity: Float = type == "success" ? 1.0 : (type == "warning" ? 0.5 : 0.3)
+        let sharpness: Float = type == "success" ? 0.8 : 0.4
+        let event = CHHapticEvent(eventType: .hapticTransient, parameters: [
+            CHHapticEventParameter(parameterID: .hapticIntensity, value: intensity),
+            CHHapticEventParameter(parameterID: .hapticSharpness, value: sharpness)
+        ], relativeTime: 0)
+        do {
+            let pattern = try CHHapticPattern(events: [event], parameters: [])
+            let player = try hapticEngine.makePlayer(with: pattern)
+            try player.start(atTime: 0)
+        } catch {}
+    }
 }
+

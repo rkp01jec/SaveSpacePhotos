@@ -1,0 +1,9 @@
+{
+  "privacy": [
+    {
+      "type": "photos",
+      "usage": ["read", "write"],
+      "description": "SaveSpace Photos accesses your photo library to allow you to select and compress media. No photos or videos are uploaded or sent off your device."
+    }
+  ]
+}

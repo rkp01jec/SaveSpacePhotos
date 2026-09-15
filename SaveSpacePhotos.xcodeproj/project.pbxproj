@@ -12,6 +12,8 @@
 		A00000010000000000000003 /* CompressionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000100000000000000003 /* CompressionModels.swift */; };
 		A00000010000000000000004 /* PhotoLibraryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000100000000000000004 /* PhotoLibraryService.swift */; };
 		A00000010000000000000005 /* CompressionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00000100000000000000007 /* CompressionService.swift */; };
+		B7CEA4F03058C45700704674 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = B7CEA4EF3058C45700704674 /* PrivacyInfo.xcprivacy */; };
+		C00000010000000000000001 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C00000020000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +24,8 @@
 		A00000100000000000000005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A00000100000000000000006 /* SaveSpacePhotos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SaveSpacePhotos.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00000100000000000000007 /* CompressionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompressionService.swift; sourceTree = "<group>"; };
+		B7CEA4EF3058C45700704674 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C00000020000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +56,8 @@
 				A00000100000000000000004 /* PhotoLibraryService.swift */,
 				A00000100000000000000007 /* CompressionService.swift */,
 				A00000100000000000000005 /* Info.plist */,
+				B7CEA4EF3058C45700704674 /* PrivacyInfo.xcprivacy */,
+				C00000020000000000000001 /* Assets.xcassets */,
 			);
 			path = SaveSpacePhotos;
 			sourceTree = "<group>";
@@ -120,6 +126,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7CEA4F03058C45700704674 /* PrivacyInfo.xcprivacy in Resources */,
+				C00000010000000000000001 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,7 +199,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Y7RBHJUXN4;
@@ -202,8 +212,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.savespace.photos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.learning.mainapp.akp.SaveSpacePhotosApp.SaveSpacePhotosApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -214,7 +225,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Y7RBHJUXN4;
@@ -225,8 +238,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.savespace.photos;
+				PRODUCT_BUNDLE_IDENTIFIER = com.learning.mainapp.akp.SaveSpacePhotosApp.SaveSpacePhotosApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
