@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var currentItem = ""
     @State private var showSaveConfirmation = false
     @State private var savedCount = 0
+    @State private var showAbout = false
     @State private var processingTask: Task<Void, Never>?
 
     var body: some View {
@@ -33,6 +34,19 @@ struct ContentView: View {
             }
             .navigationTitle("SaveSpace Photos")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showAbout = true
+                    } label: {
+                        Image(systemName: "info.circle")
+                    }
+                    .accessibilityLabel("About")
+                }
+            }
+            .sheet(isPresented: $showAbout) {
+                AboutView()
+            }
             .alert(permissionAlertTitle, isPresented: permissionAlert) {
                 if library.authorization == .denied {
                     Button("Open Settings") {
@@ -216,44 +230,84 @@ struct ContentView: View {
                 ForEach(results) { result in
                     HStack(spacing: 12) {
                         if result.outputType == .photo, let image = UIImage(contentsOfFile: result.outputURL.path) {
-                            Image(uiImage: image).resizable().scaledToFill().frame(width: 64, height: 64).clipShape(RoundedRectangle(cornerRadius: 10))
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 60, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
                         } else {
-                            Image(systemName: "video.fill").frame(width: 64, height: 64).background(.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                            Image(systemName: "video.fill")
+                                .font(.title2)
+                                .frame(width: 60, height: 60)
+                                .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
                         }
+
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Verified copy").font(.subheadline.bold())
+                            Text(result.outputType == .video ? "Compressed Video" : "Compressed Photo")
+                                .font(.subheadline.bold())
                             Text("\(formattedBytes(result.source.originalBytes)) → \(formattedBytes(result.outputBytes))")
-                                .font(.caption).foregroundStyle(.secondary)
-                            if let warning = result.warning { Text(warning).font(.caption2).foregroundStyle(.orange) }
-                        }
-                        if skippedCount > 0 || failedCount > 0 {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Items not completed").font(.headline)
-                                ForEach(outcomes.compactMap { outcome -> String? in
-                                    switch outcome {
-                                    case .skipped(_, let name, let reason), .failed(_, let name, let reason):
-                                        return "\(name): \(reason)"
-                                    case .success: return nil
-                                    }
-                                }, id: \.self) { message in
-                                    Text(message).font(.caption).foregroundStyle(.secondary)
-                                }
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            if let warning = result.warning {
+                                Text(warning)
+                                    .font(.caption2)
+                                    .foregroundStyle(.orange)
                             }
-                            .padding(16)
-                            .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
                         }
+
                         Spacer()
+
+                        Text("-\(result.savingsPercent)%")
+                            .font(.caption.bold())
+                            .foregroundStyle(.green)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.green.opacity(0.12), in: Capsule())
                     }
                     .padding(12)
-                    .background(.background, in: RoundedRectangle(cornerRadius: 14))
+                    .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
                 }
-                Button { showSaveConfirmation = true } label: {
-                    Label(savedCount > 0 ? "Saved \(savedCount) copies" : "Save compressed copies", systemImage: savedCount > 0 ? "checkmark.circle.fill" : "square.and.arrow.down")
-                        .frame(maxWidth: .infinity)
+
+                if skippedCount > 0 || failedCount > 0 {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Items not completed").font(.headline)
+                        ForEach(outcomes.compactMap { outcome -> String? in
+                            switch outcome {
+                            case .skipped(_, let name, let reason), .failed(_, let name, let reason):
+                                return "\(name): \(reason)"
+                            case .success: return nil
+                            }
+                        }, id: \.self) { message in
+                            Text(message).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(savedCount > 0)
+
+                if savedCount > 0 {
+                    HStack(spacing: 10) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.title3)
+                        Text("Successfully saved to the “SaveSpace Photos” album.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 4)
+                }
+
+                if !results.isEmpty {
+                    Button { showSaveConfirmation = true } label: {
+                        Label(savedCount > 0 ? "Saved \(savedCount) copies" : "Save compressed copies", systemImage: savedCount > 0 ? "checkmark.circle.fill" : "square.and.arrow.down")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(savedCount > 0)
+                }
                 Button("Compress more media") { reset() }.frame(maxWidth: .infinity)
             }
             .padding(20)
@@ -407,3 +461,71 @@ struct ContentView: View {
         }
     }
 }
+
+private struct AboutView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    HStack(spacing: 16) {
+                        Image(systemName: "photo.badge.checkmark")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.tint)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("SaveSpace Photos")
+                                .font(.headline)
+                            Text("Version 2.0 (Build 0914)")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                }
+
+                Section("Privacy & Security") {
+                    Label {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("100% On-Device Processing")
+                                .font(.subheadline.bold())
+                            Text("Your photos, videos, and metadata never leave your device. No cloud uploads, accounts, or analytics tracking.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "lock.shield.fill")
+                            .foregroundStyle(.green)
+                    }
+
+                    Label {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Originals Stay Safe")
+                                .font(.subheadline.bold())
+                            Text("Original media in your Photos library is never modified or deleted automatically.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } icon: {
+                        Image(systemName: "checkmark.seal.fill")
+                            .foregroundStyle(.blue)
+                    }
+                }
+
+                Section("How It Works") {
+                    Text("1. Select photos or videos from your library.\n2. Choose a compression preset (Maximum Quality, Balanced, or Maximum Savings).\n3. Review verified storage savings.\n4. Save compressed copies to the dedicated 'SaveSpace Photos' album.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .navigationTitle("About SaveSpace Photos")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+

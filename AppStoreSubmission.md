@@ -10,8 +10,8 @@
 - Secondary category: Utilities
 - Platform: iPhone and iPad
 - Minimum OS: iOS 17.0
-- Version: 1.0
-- Build: 1
+- Version: 2
+- Build: 0914
 - Copyright: Replace with the legal rights holder and year before submission.
 
 ## Promotional text
@@ -46,9 +46,9 @@ Keep keywords within Apple's 100-character limit after final editing. Do not rep
 
 ## What's New in This Version
 
-- Initial release.
-- Local photo and video compression with selectable quality presets.
-- Verified results and explicit save confirmation.
+- Create smaller copies of photos and videos locally while keeping originals unchanged.
+- Choose from Maximum quality, Balanced, and Maximum savings presets.
+- Review verified results, metadata notes, and expected storage savings before saving.
 
 ## App Review notes
 
@@ -94,7 +94,7 @@ The app does not implement custom encryption or network communications. Answer A
 
 ## Required App Store assets
 
-- App icon: provide a finished 1024×1024 PNG through the Xcode AppIcon asset catalog.
+- App icon: the Xcode AppIcon asset catalog includes the required 1024×1024 PNG and device sizes; confirm the final icon before upload.
 - iPhone screenshots: capture the real app on a supported 6.5-inch or 6.7-inch simulator/device.
 - iPad screenshots: capture the real app on a supported 12.9-inch or 13-inch iPad simulator/device if iPad is included in the target device family.
 - Screenshots should show onboarding, media selection, compression progress, and verified results.
@@ -104,7 +104,7 @@ The app does not implement custom encryption or network communications. Answer A
 
 - Replace the copyright placeholder.
 - Confirm the final product name is available and trademark-safe.
-- Add the final app icon.
+- Confirm the final app icon in the App Store Connect preview.
 - Create an App Store Connect app record using bundle ID `com.savespace.photos`.
 - Select the correct signing team and distribution certificate in Xcode.
 - Archive a Release build and upload it from Organizer.
